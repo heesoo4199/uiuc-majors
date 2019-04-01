@@ -1,19 +1,52 @@
 
-// Using jQuery, read our data and call visualize(...) only once the page is ready:
 $(function() {
-  // d3.csv("football.csv").then(function(data) {
-  //   // Write the data to the console for debugging:
-  //   console.log(data);
+  d3.csv("majors_cleaned.csv").then(function(majors_data) {
+    d3.csv("total_enrollment.csv").then(function(enrollment_data) {
+        const majors = {};
+        const cleanData = [];
 
-  //   // Call our visualize function:
-  //   visualize(data);
-  // });
-  const data = [
-    {department: "Enginerring", major: "CS", startYear: 1980, endYear: 2013, startData: 2.3, endData: 9.7, startFemalePercentage: 0.36, endFemalePercentage: 0.64}
-  ];
+        majors_data.forEach((row) => {
+            if (!(row.Major in majors)) {
+                majors[row.Major] = {startYear: parseFloat(row.Year), endYear: parseFloat(row.Year), startData: parseFloat(row.Total), endData: parseFloat(row.Total), startFemale: parseFloat(row.Female), endFemale: parseFloat(row.Female), college: row.College};
+                return;
+            }
 
+            if (row.Year < majors[row.Major].startYear) {
+                majors[row.Major].startYear = parseFloat(row.Year);
+                majors[row.Major].startData = parseFloat(row.Total);
+                majors[row.Major].startFemale = parseFloat(row.Female);
+            } else if (row.Year > majors[row.Major].endYear) {
+                majors[row.Major].endYear = parseFloat(row.Year);
+                majors[row.Major].endData = parseFloat(row.Total);
+                majors[row.Major].endFemale = parseFloat(row.Female);
+            }
+        });
 
-  visualize(data);
+        const enrollment = {};
+        enrollment_data.forEach((row) => {
+            enrollment[row.Year] = parseInt(row.Total);
+        });
+
+        Object.entries(majors).forEach((pair) => {
+            const dataToAdd = pair[1];
+            dataToAdd.major = pair[0];
+
+            dataToAdd.startData = 100 * dataToAdd.startData / enrollment[dataToAdd.startYear];
+            dataToAdd.endData = 100 * dataToAdd.endData / enrollment[dataToAdd.endYear];
+            
+            if (dataToAdd.college == "Engineering") {
+                cleanData.push(dataToAdd);
+            }
+        })
+
+        console.log(cleanData);
+
+        visualize(cleanData);
+    });
+  });
+//   const data = [
+//     {department: "Enginerring", major: "CS", startYear: 1980, endYear: 2013, startData: 2.3, endData: 9.7, startFemalePercentage: 0.36, endFemalePercentage: 0.64}
+//   ];
 });
 
 
@@ -22,13 +55,13 @@ const visualize = function(data) {
         margin: {
             top: 100,
             right: 50,
-            bottom: 150,
+            bottom: 100,
             left: 50
         },
         circleRadius: 3
     };
 
-    config.width = 1000 - config.margin.left - config.margin.right;
+    config.width = 250 - config.margin.left - config.margin.right;
     config.height = 500 - config.margin.top - config.margin.bottom;
 
     const svg = d3.select("#chart")
@@ -42,31 +75,22 @@ const visualize = function(data) {
 
     const yScale = d3.scaleLinear()
         .range([config.height, 0])
-        .domain([0, 10]);
+        .domain([0, 5]);
 
     // const colorScale = d3.scaleLinear()
     //     .domain([0,1])
     //     .range(['#f44242', '#417cf4']);
 
     svg.append('g')
-        .call(d3.axisLeft(yScale));
+        .call(d3.axisLeft(yScale).ticks(5));
     
     svg.append("g")
         .attr("transform", "translate( " + config.width + ", 0 )")
-        .call(d3.axisRight(yScale));
+        .call(d3.axisRight(yScale).ticks(5));
 
-    const xScale = d3.scaleBand()
+    const xScale = d3.scaleLinear()
         .range([0, config.width])
-        .domain(data.map((row) => row.opp))
-        .padding(0.2);
-
-    svg.append('g')
-        .attr('transform', `translate(0, ${config.height})`)
-        .call(d3.axisBottom(xScale))
-        .selectAll("text")
-        .attr("y", 0)
-        .attr("x", 9)
-        .attr("dy", ".35em");
+        .domain([1980, 2018]);
 
     const slopeGroups = svg.append("g")
         .selectAll("g")
@@ -81,41 +105,40 @@ const visualize = function(data) {
     
     const slopeLines = slopeGroups.append("line")
       .attr("class", "slope-line")
-      .attr("x1", 0)
+      .attr("x1", d => xScale(d.startYear))
       .attr("y1", d => yScale(d.startData))
-      .attr("x2", config.width)
+      .attr("x2", d => xScale(d.endYear))
       .attr("y2", d => yScale(d.endData));
 
     const leftSlopeCircle = slopeGroups.append("circle")
-        .attr("r", 3)
+        .attr("r", config.circleRadius)
+        .attr("cx", d => xScale(d.startYear))
         .attr("cy", d => yScale(d.startData))
         .style("fill", "black");
 
     const rightSlopeCircle = slopeGroups.append("circle")
-        .attr("r", 3)
-        .attr("cx", config.width)
+        .attr("r", config.circleRadius)
+        .attr("cx", d => xScale(d.endYear))
         .attr("cy", d => yScale(d.endData))
         .style("fill", "black");
 
     svg.append("text")
         .attr("x", (config.width / 2))             
-        .attr("y", 0 - (config.margin.top / 2))
+        .attr("y", 10 - (2 * config.margin.top / 3))
         .attr("text-anchor", "middle")  
         .style("font-size", "18px")
-        .style("fill", "#417cf4")
-        .style("text-decoration", "underline")  
-        .text("Fighting Illini Win Percentage vs Most Played Teams");
+        .text("College of Engineering");
 
-    var titlesLeft = svg.append("g")
+    const titlesLeft = svg.append("g")
         .attr("class", "title");
 
     titlesLeft.append("text")
         .attr("text-anchor", "end")
-        .attr("dx", -7.5)
-        .attr("dy", -config.margin.top / 4)
+        .attr("dx", - 7.5)
+        .attr("dy", - config.margin.top / 4)
         .text("1980");
 
-    var titlesRight = svg.append("g")
+    const titlesRight = svg.append("g")
         .attr("class", "title");
 
     titlesRight.append("text")
