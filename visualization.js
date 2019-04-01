@@ -23,24 +23,27 @@ $(function() {
     visualize(majors, "#chart-bus", "Business");
     visualize(majors, "#chart-media", "Media");
     visualize(majors, "#chart-aces", "ACES");
-    visualize(majors, "#chart-avi", "Aviation");
     visualize(majors, "#chart-art", "Fine and Applied Arts");
     visualize(majors, "#chart-ahs", "Applied Health Sciences");
-    visualize(majors, "#chart-als", "Applied Life Sciences");
-    visualize(majors, "#chart-lir", "Labor and Industrial Relations");
-    visualize(majors, "#chart-lm", "LM");
-    visualize(majors, "#chart-isc", "iSchool");
-    visualize(majors, "#chart-law", "Law");
-    visualize(majors, "#chart-med", "Medicine");
-    visualize(majors, "#chart-ln", "LN");
-    visualize(majors, "#chart-dgs", "DGS");
-    visualize(majors, "#chart-soc", "Social Work");
+    visualize(majors, "#chart-soc", "Other");
   });
 });
 
 
 const visualize = function(majorsData, chartId, college) {
-    const data = majorsData.filter(major => major.college == college);
+    const data = college != "Other" ? majorsData.filter(major => major.college == college)
+                                    : majorsData.filter(major => {
+                                        return major.college == "Aviation" ||
+                                               major.college == "Applied Life Sciences" ||
+                                               major.college == "Labor and Industrial Relations" ||
+                                               major.college == "LM" ||
+                                               major.college == "iSchool" ||
+                                               major.college == "Law" ||
+                                               major.college == "Medicine" ||
+                                               major.college == "LN" ||
+                                               major.college == "DGS" ||
+                                               major.college == "Social Work";
+                                    });
 
     const config = {
         margin: {
