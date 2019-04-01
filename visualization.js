@@ -110,6 +110,7 @@ const visualize = function(data) {
       .attr("y", d => yScale((d.startData+d.endData)/2)-50)
       .attr("text-anchor", "middle")
       .style("font-size", "18px")
+      .style("visibility", "hidden")
       .text("College of Engineering");
 
     const labelLine = slopeGroups.append("line")
@@ -118,6 +119,7 @@ const visualize = function(data) {
       .attr("y1", d => yScale((d.startData+d.endData)/2))
       .attr("x2", config.width/2)
       .attr("y2", d => yScale((d.startData+d.endData)/2)-40)
+      .style("visibility", "hidden")
       .style("stroke", "black")
       .style("stroke-width", 3);
 
@@ -134,11 +136,15 @@ const visualize = function(data) {
         d3.select(this)
             .attr('opacity', 1.0)
             .style("stroke-width", 5)
+        label.style("visibility", "visible")
+        labelLine.style("visibility", "visible")
       })
       .on('mouseleave', function () {
         d3.select(this)
             .attr('opacity', 0.6)
             .style("stroke-width", 3)
+        label.style("visibility", "hidden")
+        labelLine.style("visibility", "hidden")
       });
 
     const leftSlopeCircle = slopeGroups.append("circle")
