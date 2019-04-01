@@ -32,51 +32,84 @@ const colorScale = d3.scaleLinear()
 const visualizeKey = () => {
     const config = {
         margin: {
-            top: 150,
-            right: 50,
-            bottom: 100,
-            left: 50
-        }
+            top: 0,
+            right: 25,
+            bottom: 0,
+            left: 25
+        },
+        circleRadius: 5
     };
 
-    config.width = 200 - config.margin.left - config.margin.right;
-    config.height = 50 - config.margin.top - config.margin.bottom;
+    config.width = 250 - config.margin.left - config.margin.right;
+    config.height = 50;
 
-    const svg = d3.select("#color-key")
-        .append("svg")
-        .attr("width", config.width + config.margin.left + config.margin.right)
+    var key = d3.select("#color-key")
+      .append("svg")
+      .attr("width", config.width + config.margin.left + config.margin.right)
         .attr("height", config.height + config.margin.top + config.margin.bottom)
         .style("width", config.width + config.margin.left + config.margin.right)
-        .style("height", config.height + config.margin.top + config.margin.bottom);
+        .style("height", config.height + config.margin.top + config.margin.bottom)
+        .append("g")
+        .attr("transform", "translate(" + config.margin.left + "," + config.margin.top + ")");
 
-    const defs = svg.append("defs");
+    var legend = key.append("defs")
+      .append("svg:linearGradient")
+      .attr("id", "key-gradient")
+      .attr("x1", "0%")
+      .attr("y1", "100%")
+      .attr("x2", "100%")
+      .attr("y2", "100%")
+      .attr("spreadMethod", "pad");
 
-    const linearGradient = defs.append("linearGradient")
-        .attr("id", "key-gradient")
-        .attr("x1", "0%")
-        .attr("y1", "0%")
-        .attr("x2", "100%")
-        .attr("y2", "0%")
-        .selectAll('stop') 
-        .data([                             
-            {offset: '0%', color: colorScale(0) },      
-            {offset: '100%', color: colorScale(1) }    
-        ])                  
-        .enter().append('stop')
-        .attr('offset', d => d.offset) 
-        .attr('stop-color', d => d.color);
-        
-    svg.append("rect")
-        .attr("width", 300)
-        .attr("height", 25)
-        .style("fill", "url(#key-gradient)");
+    legend.append("stop")
+      .attr("offset", "0%")
+      .attr("stop-color", colorScale(0))
+      .attr("stop-opacity", 1);
 
-    const xScale = d3.scaleLinear()
-        .range([0, config.width])
-        .domain([0, 100]);
+    legend.append("stop")
+      .attr("offset", "25%")
+      .attr("stop-color", colorScale(0.25))
+      .attr("stop-opacity", 1);
 
-    svg.append('g')
-        .call(d3.axisBottom(xScale).ticks(5));
+    legend.append("stop")
+      .attr("offset", "50%")
+      .attr("stop-color", colorScale(0.5))
+      .attr("stop-opacity", 1);
+
+    legend.append("stop")
+      .attr("offset", "75%")
+      .attr("stop-color", colorScale(0.75))
+      .attr("stop-opacity", 1);
+
+      legend.append("stop")
+      .attr("offset", "100%")
+      .attr("stop-color", colorScale(1))
+      .attr("stop-opacity", 1);
+
+    key.append("rect")
+      .attr("width", config.width)
+      .attr("height", config.height - 30)
+      .style("fill", "url(#key-gradient)")
+      .attr("transform", "translate(0,10)");
+
+    var y = d3.scaleLinear()
+      .range([config.width, 0])
+      .domain([100, 0]);
+
+    var yAxis = d3.axisBottom()
+      .scale(y)
+      .ticks(5);
+
+    key.append("g")
+      .attr("class", "y axis")
+      .attr("transform", "translate(0,30)")
+      .call(yAxis)
+      .append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 0)
+      .attr("dy", ".71em")
+      .style("text-anchor", "end")
+      .text("axis title");
 };
 
 
