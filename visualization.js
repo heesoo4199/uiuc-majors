@@ -102,13 +102,44 @@ const visualize = function(data) {
         //     d.id = "group" + i;
         //     d.values = [];
         // });
-    
+
+    const label = slopeGroups.append("text")
+      .attr("class", "label")
+      .style('position','absolute')
+      .attr("x", (config.width / 2))
+      .attr("y", d => yScale((d.startData+d.endData)/2)-50)
+      .attr("text-anchor", "middle")
+      .style("font-size", "18px")
+      .text("College of Engineering");
+
+    const labelLine = slopeGroups.append("line")
+      .attr("class", "label-line")
+      .attr("x1", config.width/2)
+      .attr("y1", d => yScale((d.startData+d.endData)/2))
+      .attr("x2", config.width/2)
+      .attr("y2", d => yScale((d.startData+d.endData)/2)-40)
+      .style("stroke", "black")
+      .style("stroke-width", 3);
+
     const slopeLines = slopeGroups.append("line")
       .attr("class", "slope-line")
       .attr("x1", d => xScale(d.startYear))
       .attr("y1", d => yScale(d.startData))
       .attr("x2", d => xScale(d.endYear))
-      .attr("y2", d => yScale(d.endData));
+      .attr("y2", d => yScale(d.endData))
+      .attr('opacity', 0.6)
+      .style("stroke", "black")
+      .style("stroke-width", 3)
+      .on('mouseenter', function () {
+        d3.select(this)
+            .attr('opacity', 1.0)
+            .style("stroke-width", 5)
+      })
+      .on('mouseleave', function () {
+        d3.select(this)
+            .attr('opacity', 0.6)
+            .style("stroke-width", 3)
+      });
 
     const leftSlopeCircle = slopeGroups.append("circle")
         .attr("r", config.circleRadius)
@@ -123,9 +154,9 @@ const visualize = function(data) {
         .style("fill", "black");
 
     svg.append("text")
-        .attr("x", (config.width / 2))             
+        .attr("x", (config.width / 2))
         .attr("y", 10 - (2 * config.margin.top / 3))
-        .attr("text-anchor", "middle")  
+        .attr("text-anchor", "middle")
         .style("font-size", "18px")
         .text("College of Engineering");
 
