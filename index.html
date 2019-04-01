@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
   <head>
-    <title>Base template for simple d3.js visualizations</title>
+    <title>Percentage of UIUC Students in Each Major Since 1980</title>
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
@@ -18,32 +18,43 @@
   </head>
 
   <style>
-      .chart {
-          float: left;
+      body {
+        font-family: Georgia, 'Times New Roman', Times, serif;
+      }
+
+      .row > div {
+        display: inline-block;
+        display: -moz-inline-box;
+        *display: inline;
+        zoom: 1;
+        width: 20%;
+        text-align: center;
+      }
+
+      .container-fluid {
+        margin-top: 20px;
       }
   </style>
 
   <body>
-    <div class="container">
+    <div class="container-fluid">
       <!-- Our d3.js visualization will appear in #chart -->
-      <div class="chart" id="chart-eng"></div>
-      <div class="chart" id="chart-las"></div>
-      <div class="chart" id="chart-edu"></div>
-      <div class="chart" id="chart-bus"></div>
-      <div class="chart" id="chart-media"></div>
-      <div class="chart" id="chart-aces"></div>
-      <div class="chart" id="chart-avi"></div>
-      <div class="chart" id="chart-art"></div>
-      <div class="chart" id="chart-ahs"></div>
-      <div class="chart" id="chart-als"></div>
-      <div class="chart" id="chart-lir"></div>
-      <div class="chart" id="chart-lm"></div>
-      <div class="chart" id="chart-isc"></div>
-      <div class="chart" id="chart-law"></div>
-      <div class="chart" id="chart-med"></div>
-      <div class="chart" id="chart-ln"></div>
-      <div class="chart" id="chart-dgs"></div>
-      <div class="chart" id="chart-soc"></div>
+      <div class="row">
+        <div class="chart col-sm-3" id="chart-eng"></div>
+        <div class="col-sm-6" id="chart-info">
+          <h1>Percentage of UIUC Students in Each Major Since 1980</h1>
+          <p>By Charan Sankaran, Angeeras Ramanath, Heesoo Yang, Martynas Juskelis, and Asher Dale</p>
+          <div id="color-key"></div>
+        </div>
+        <div class="chart col-sm-3" id="chart-bus"></div>
+      </div>
+      <div class="row">
+        <div class="chart" id="chart-edu"></div>
+        <div class="chart" id="chart-las"></div>
+        <div class="chart" id="chart-aces"></div>
+        <div class="chart" id="chart-art"></div>
+        <div class="chart" id="chart-oth"></div>
+      </div>
     </div>
   </body>
 

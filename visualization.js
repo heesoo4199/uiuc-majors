@@ -1,7 +1,5 @@
 $(function() {
   d3.csv("majors_slope_data.csv").then(majors => {
-    const colleges = {};
-
     majors.forEach((major) => {
         major.startData = parseFloat(major.startData);
         major.endData = parseFloat(major.endData);
@@ -11,52 +9,113 @@ $(function() {
 
         major.startFemale = parseFloat(major.startFemale);
         major.endFemale = parseFloat(major.endFemale);
-
-        colleges[major.college] = 1;
     });
 
-    console.log(Object.keys(colleges));
+    majors = majors.filter(major => major.endYear == 2018);
 
     visualize(majors, "#chart-eng", "Engineering");
-    visualize(majors, "#chart-eng", "LAS");
+    visualize(majors, "#chart-las", "LAS");
     visualize(majors, "#chart-edu", "Education");
-    visualize(majors, "#chart-bus", "Business");
-    visualize(majors, "#chart-media", "Media");
+    visualize(majors, "#chart-bus", "Business + Media");
     visualize(majors, "#chart-aces", "ACES");
     visualize(majors, "#chart-art", "Fine and Applied Arts");
-    visualize(majors, "#chart-ahs", "Applied Health Sciences");
-    visualize(majors, "#chart-soc", "Other");
+    visualize(majors, "#chart-oth", "Other");
+
+    visualizeKey();
   });
 });
 
+const colorScale = d3.scaleLinear()
+    .domain([0, 0.25, 0.5, 0.75, 1])
+    .range(['#10a7dd', '#72cde8', '#bbbbbb', '#e8a099', '#ff0033']);
+
+const visualizeKey = () => {
+    const config = {
+        margin: {
+            top: 150,
+            right: 50,
+            bottom: 100,
+            left: 50
+        }
+    };
+
+    config.width = 200 - config.margin.left - config.margin.right;
+    config.height = 50 - config.margin.top - config.margin.bottom;
+
+    const svg = d3.select("#color-key")
+        .append("svg")
+        .attr("width", config.width + config.margin.left + config.margin.right)
+        .attr("height", config.height + config.margin.top + config.margin.bottom)
+        .style("width", config.width + config.margin.left + config.margin.right)
+        .style("height", config.height + config.margin.top + config.margin.bottom);
+
+    const defs = svg.append("defs");
+
+    const linearGradient = defs.append("linearGradient")
+        .attr("id", "key-gradient")
+        .attr("x1", "0%")
+        .attr("y1", "0%")
+        .attr("x2", "100%")
+        .attr("y2", "0%")
+        .selectAll('stop') 
+        .data([                             
+            {offset: '0%', color: colorScale(0) },      
+            {offset: '100%', color: colorScale(1) }    
+        ])                  
+        .enter().append('stop')
+        .attr('offset', d => d.offset) 
+        .attr('stop-color', d => d.color);
+        
+    svg.append("rect")
+        .attr("width", 300)
+        .attr("height", 25)
+        .style("fill", "url(#key-gradient)");
+
+    const xScale = d3.scaleLinear()
+        .range([0, config.width])
+        .domain([0, 100]);
+
+    svg.append('g')
+        .call(d3.axisBottom(xScale).ticks(5));
+};
+
 
 const visualize = function(majorsData, chartId, college) {
-    const data = college != "Other" ? majorsData.filter(major => major.college == college)
-                                    : majorsData.filter(major => {
-                                        return major.college == "Aviation" ||
-                                               major.college == "Applied Life Sciences" ||
-                                               major.college == "Labor and Industrial Relations" ||
-                                               major.college == "LM" ||
-                                               major.college == "iSchool" ||
-                                               major.college == "Law" ||
-                                               major.college == "Medicine" ||
-                                               major.college == "LN" ||
-                                               major.college == "DGS" ||
-                                               major.college == "Social Work";
-                                    });
+    let data = majorsData.filter(major => major.college == college);
+
+    if (college == 'Other') {
+        data = majorsData.filter(major => {
+            return major.college == "Aviation" ||
+                   major.college == "Applied Life Sciences" ||
+                   major.college == "Labor and Industrial Relations" ||
+                   major.college == "LM" ||
+                   major.college == "iSchool" ||
+                   major.college == "Law" ||
+                   major.college == "Medicine" ||
+                   major.college == "LN" ||
+                   major.college == "DGS" ||
+                   major.college == "Social Work" ||
+                   major.college == "Applied Health Sciences";
+        });
+    } else if (college == 'Business + Media') {
+        data = majorsData.filter(major => {
+            return major.college == "Business" ||
+                   major.college == "Media";
+        });
+    }
 
     const config = {
         margin: {
             top: 50,
-            right: 100,
+            right: 50,
             bottom: 100,
-            left: 100
+            left: 50
         },
-        circleRadius: 2.5
+        circleRadius: 5
     };
 
-    config.width = 350 - config.margin.left - config.margin.right;
-    config.height = 500 - config.margin.top - config.margin.bottom;
+    config.width = 250 - config.margin.left - config.margin.right;
+    config.height = 400 - config.margin.top - config.margin.bottom;
 
     const svg = d3.select(chartId)
         .append("svg")
@@ -67,13 +126,22 @@ const visualize = function(majorsData, chartId, college) {
         .append("g")
         .attr("transform", "translate(" + config.margin.left + "," + config.margin.top + ")");
 
+    d3.select(chartId).on('mouseleave', function (d) {
+        d3.selectAll(".slope-line")
+            .style("stroke-width", 3);
+
+        d3.selectAll(".major-label")
+            .style('visibility', 'hidden');
+
+        d3.selectAll(".major-label-line")
+            .style('visibility', 'hidden');
+    });
+
     const yScale = d3.scaleLinear()
         .range([config.height, 0])
         .domain([0, 5]);
 
-    // const colorScale = d3.scaleLinear()
-    //     .domain([0,1])
-    //     .range(['#f44242', '#417cf4']);
+    const defs = svg.append("defs");
 
     svg.append('g')
         .call(d3.axisLeft(yScale).ticks(5));
@@ -119,13 +187,10 @@ const visualize = function(majorsData, chartId, college) {
       .attr("y1", d => yScale(d.startData))
       .attr("x2", d => xScale(d.endYear))
       .attr("y2", d => yScale(d.endData))
-      .attr('opacity', 0.6)
-      .style("stroke", "black")
-      .style("stroke-width", 2)
+      .style("stroke-width", 3)
       .on('mouseenter', function (d) {
         d3.selectAll(".slope-line")
-            .attr('opacity', 0.6)
-            .style("stroke-width", 2);
+            .style("stroke-width", 3);
 
         d3.selectAll(".major-label")
             .style('visibility', 'hidden');
@@ -134,8 +199,7 @@ const visualize = function(majorsData, chartId, college) {
             .style('visibility', 'hidden');
 
         d3.select(this)
-            .attr('opacity', 1.0)
-            .style("stroke-width", 3);
+            .style("stroke-width", 5);
 
         d3.select("#label" + d.major.replace(/\W+/g, ""))
             .style('visibility', 'visible');
@@ -143,18 +207,35 @@ const visualize = function(majorsData, chartId, college) {
         d3.select("#labelLine" + d.major.replace(/\W+/g, ""))
             .style('visibility', 'visible');
       });
+      
+      slopeLines.style('stroke', (d, i) => {
+        const gradientID = `gradient${d.major.replace(/\W+/g, "")}`;
+    
+        const linearGradient = defs.append('linearGradient')
+            .attr('id', gradientID)
+            .selectAll('stop') 
+            .data([                             
+              {offset: '0%', color: colorScale(d.startFemale) },      
+              {offset: '100%', color: colorScale(d.endFemale) }    
+            ])                  
+            .enter().append('stop')
+            .attr('offset', d => d.offset) 
+            .attr('stop-color', d => d.color);
+    
+        return `url(#${gradientID})`;
+      });
 
     const leftSlopeCircle = slopeGroups.append("circle")
         .attr("r", config.circleRadius)
         .attr("cx", d => xScale(d.startYear))
         .attr("cy", d => yScale(d.startData))
-        .style("fill", "black");
+        .style("fill", d => colorScale(d.startFemale));
 
     const rightSlopeCircle = slopeGroups.append("circle")
         .attr("r", config.circleRadius)
         .attr("cx", d => xScale(d.endYear))
         .attr("cy", d => yScale(d.endData))
-        .style("fill", "black");
+        .style("fill", d => colorScale(d.endFemale));
 
     svg.append("text")
         .attr("x", (config.width / 2))
@@ -175,7 +256,7 @@ const visualize = function(majorsData, chartId, college) {
         .attr("class", "title")
         .append("text")
         .attr("text-anchor", "end")
-        .attr("dx", config.width + config.margin.right / 2)
+        .attr("dx", config.width + config.margin.left / 1.2)
         .attr("dy", config.height + config.margin.top / 2)
         .text("2018");
 };
