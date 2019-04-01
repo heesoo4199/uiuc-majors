@@ -28,7 +28,7 @@ const visualize = function(data) {
         circleRadius: 3
     };
 
-    config.width = 1000 - config.margin.left - config.margin.right;
+    config.width = 250 - config.margin.left - config.margin.right;
     config.height = 500 - config.margin.top - config.margin.bottom;
 
     const svg = d3.select("#chart")
@@ -50,7 +50,7 @@ const visualize = function(data) {
 
     svg.append('g')
         .call(d3.axisLeft(yScale));
-    
+
     svg.append("g")
         .attr("transform", "translate( " + config.width + ", 0 )")
         .call(d3.axisRight(yScale));
@@ -59,14 +59,6 @@ const visualize = function(data) {
         .range([0, config.width])
         .domain(data.map((row) => row.opp))
         .padding(0.2);
-
-    svg.append('g')
-        .attr('transform', `translate(0, ${config.height})`)
-        .call(d3.axisBottom(xScale))
-        .selectAll("text")
-        .attr("y", 0)
-        .attr("x", 9)
-        .attr("dy", ".35em");
 
     const slopeGroups = svg.append("g")
         .selectAll("g")
@@ -78,13 +70,53 @@ const visualize = function(data) {
         //     d.id = "group" + i;
         //     d.values = [];
         // });
-    
+
+    const label = slopeGroups.append("text")
+      .attr("class", "label")
+      .style('position','absolute')
+      .attr("x", (config.width / 2))
+      .attr("y", d => yScale((d.startData+d.endData)/2)-50)
+      .attr("text-anchor", "middle")
+      .style("font-size", "18px")
+      .text("College of Engineering");
+
+    const labelLine = slopeGroups.append("line")
+      .attr("class", "label-line")
+      .attr("x1", config.width/2)
+      .attr("y1", d => yScale((d.startData+d.endData)/2))
+      .attr("x2", config.width/2)
+      .attr("y2", d => yScale((d.startData+d.endData)/2)-40)
+      .style("stroke", "black")
+      .style("stroke-width", 3);
+
     const slopeLines = slopeGroups.append("line")
       .attr("class", "slope-line")
       .attr("x1", 0)
       .attr("y1", d => yScale(d.startData))
       .attr("x2", config.width)
-      .attr("y2", d => yScale(d.endData));
+      .attr("y2", d => yScale(d.endData))
+      .attr('opacity', 0.6)
+      .style("stroke", "black")
+      .style("stroke-width", 3)
+      .on('mouseenter', function () {
+        d3.select(this)
+            .attr('opacity', 1.0)
+            .style("stroke-width", 5)
+      })
+      .on('mouseleave', function () {
+        d3.select(this)
+            .attr('opacity', 0.6)
+            .style("stroke-width", 3)
+      });
+
+    // var titlesLeft = svg.append("g")
+    //     .attr("class", "title");
+    //
+    // titlesLeft.append("text")
+    //     .attr("text-anchor", "end")
+    //     .attr("dx", -7.5)
+    //     .attr("dy", -config.margin.top / 4)
+    //     .text("1980");
 
     const leftSlopeCircle = slopeGroups.append("circle")
         .attr("r", 3)
@@ -98,13 +130,11 @@ const visualize = function(data) {
         .style("fill", "black");
 
     svg.append("text")
-        .attr("x", (config.width / 2))             
-        .attr("y", 0 - (config.margin.top / 2))
-        .attr("text-anchor", "middle")  
+        .attr("x", (config.width / 2))
+        .attr("y", 10 - (2 * config.margin.top / 3))
+        .attr("text-anchor", "middle")
         .style("font-size", "18px")
-        .style("fill", "#417cf4")
-        .style("text-decoration", "underline")  
-        .text("Fighting Illini Win Percentage vs Most Played Teams");
+        .text("College of Engineering");
 
     var titlesLeft = svg.append("g")
         .attr("class", "title");
